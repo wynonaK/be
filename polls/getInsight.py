@@ -199,7 +199,7 @@ def getInfo(inputFile):
 			comparableAcceptanceRate = {}
 			topAuthorsByTrack = {}
 
-			columnIndex = columnHeaders.index("tracknosub")
+			columnIndex = columnHeaders.index("tracknamesub")
 			tracks = set([str(ele[columnIndex]) for ele in lines])
 			paperGroupsByTrack = {track : [line for line in lines if str(line[columnIndex]) == track] for track in tracks}
 
