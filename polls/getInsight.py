@@ -207,7 +207,7 @@ def getInfo(inputFile):
 			comparableAcceptanceRate['year'] = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
 			comparableAcceptanceRate['Full Papers'] = [0.29, 0.28, 0.27, 0.29, 0.29, 0.30, 0.29, 0.30]
 			comparableAcceptanceRate['Short Papers'] = [0.29, 0.37, 0.31, 0.31, 0.32, 0.50, 0.35, 0.32]
-
+			
 			for track, papers in paperGroupsByTrack.iteritems():
 				# keyword of submission
 				if "keysub" in columnHeaders:
@@ -249,6 +249,15 @@ def getInfo(inputFile):
 				parsedResult['topAuthorsByTrack'] = topAuthorsByTrack
 
 			parsedResult['comparableAcceptanceRate'] = comparableAcceptanceRate
+
+			# A list of labels for by track
+			acceptanceRateByTrackLabels = ['Tutorials', 'Short Papers', 'JCDL 2018 - Workshops', 'Full Papers', 'Poster/Demo', 'Panels', 'Doctoral Consortium', 'Posters and Demos']
+			topAuthorsByTrackLabels = ['Tutorials', 'Short Papers', 'JCDL 2018 - Workshops', 'Full Papers', 'Poster/Demo 2', 'Panels', 'Doctoral and Consortium', 'Posters and Demos']
+			keywordsByTrackLabels = ['Full Papers', 'Doctoral Consortium', 'Short Papers', 'Posters and Demos', 'Tutorials', 'JCDL 2018 - Workshops', 'Poster/Demo 2', 'Panels']
+
+			parsedResult['acceptanceRateByTrackLabels'] = {'labels': acceptanceRateByTrackLabels}
+			parsedResult['topAuthorsByTrackLabels'] = {'labels': topAuthorsByTrackLabels}
+			parsedResult['keywordsByTrackLabels'] = {'labels': keywordsByTrackLabels}
 
 	# although norev not used, does it make sense to not have 1 - for reviewScore
 	if "norev" in columnHeaders:
