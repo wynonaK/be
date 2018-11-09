@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from utils import parseCSVFileFromDjangoFile, isNumber, returnTestChartData
-from getInsight import parseAuthorCSVFile, getReviewScoreInfo, getAuthorInfo, getReviewInfo, getSubmissionInfo, getInfo
+from getInsight import getInfo
 
 # Create your views here.
 # Note: a view is a func taking the HTTP request and returns sth accordingly
