@@ -26,9 +26,12 @@ def uploadCSV(request):
 	print "Inside the upload function"
 	if request.FILES:
 		csvFile = request.FILES['file']
+		csvIfMultiple = request.POST['multiple']
+
 		fileName = str(csvFile.name)
+		print fileName
 		rowContent = ""
-		rowContent = getInfo(csvFile)
+		rowContent = getInfo(csvFile, csvIfMultiple)
 
 		print type(csvFile.name)
 

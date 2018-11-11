@@ -4,7 +4,7 @@ from collections import Counter
 
 from utils import parseCSVFile, testCSVFileFormatMatching, isNumber, parseSubmissionTime
 
-def getInfo(inputFile):
+def getInfo(inputFile, multiple):
 
 	parsedResult = {}
 	columnHeaders = {}
@@ -24,19 +24,51 @@ def getInfo(inputFile):
 			columnIndexFirst = columnHeaders.index('firstauth')
 			columnIndexSecond = columnHeaders.index('lastauth')
 
-			parsedResult['topAuthors'] = getAuth(lines, columnIndexFirst, columnIndexSecond)
+			authorList = []
+
+			for authorInfo in lines:
+				authorList.append({'name': authorInfo[columnIndexFirst] + " " + authorInfo[columnIndexSecond]})
+				
+			authors = [ele['name'] for ele in authorList if ele] # adding in the if ele in case of empty strings; same applies below
+			topAuthors = Counter(authors).most_common(10)
+
+			parsedResult['topAuthors'] = {'labels': [ele[0] for ele in topAuthors], 'data': [ele[1] for ele in topAuthors]}
 
 		# author country
 		if "countauth" in columnHeaders:
-			columnIndex = columnHeaders.index('countauth')
-			
-			parsedResult['topCountries'] = getCountry(lines, columnIndex)
+			columnIndexFirst = columnHeaders.index('countauth')
+
+			countryList = []
+			subAuthCountList = []
+			for countryInfo in lines:
+				countryList.append({'country': countryInfo[columnIndexFirst]})
+				subAuthCountList.append({countryInfo[columnIndex] : countryInfo[columnIndexFirst]})
+
+			if multiple == "true":
+				parsedResult['authCountMap'] = subAuthCountList
+
+			countries = [ele['country'] for ele in countryList if ele]
+			topCountries = Counter(countries).most_common(10)
+
+			parsedResult['topCountries'] = {'labels': [ele[0] for ele in topCountries], 'data': [ele[1] for ele in topCountries]}
 
 		# author organization
 		if "orgauth" in columnHeaders:
-			columnIndex = columnHeaders.index('orgauth')
+			columnIndexFirst = columnHeaders.index('orgauth')
 
-			parsedResult['topAffiliations'] = getAffliation(lines, columnIndex)
+			affliationList = []
+			subAuthOrgList = []
+			for affliationInfo in lines:
+				affliationList.append({'affliation': affliationInfo[columnIndexFirst]})
+				subAuthOrgList.append({affliationInfo[columnIndex] : affliationInfo[columnIndexFirst]})
+
+			if multiple == "true":
+				parsedResult['authOrgMap'] = subAuthOrgList
+
+			affiliations = [ele['affliation'] for ele in affliationList if ele]
+			topAffiliations = Counter(affiliations).most_common(10)
+
+			parsedResult['topAffiliations'] = {'labels': [ele[0] for ele in topAffiliations], 'data': [ele[1] for ele in topAffiliations]}
 
 		# Doesn't use any information, will be here.
 		scoreDistributionCounts = [0] * int((3 + 3) / 0.25)
@@ -50,6 +82,19 @@ def getInfo(inputFile):
 
 		for index, col in enumerate(recommendDistributionCounts):
 			recommendDistributionLabels[index] = str(0 + 0.1 * index) + " ~ " + str(0 + 0.1 * index + 0.1)
+		
+		# date and time of review
+		if "daterev" in columnHeaders and "timerev" in columnHeaders and multiple == "true":
+			columnIndex = columnHeaders.index("nosub")
+			columnIndexFirst = columnHeaders.index("daterev")
+			columnIndexSecond = columnHeaders.index("timerev")
+
+			revDateTimeList = []
+
+			for line in lines:
+				revDateTimeList.append({line[columnIndex]: line[columnIndexFirst] + " " + line[columnIndexSecond]})
+			
+			parsedResult['revDateTimeMap'] = revDateTimeList
 
 		# review evaluation based on submission number
 		if "evarev" in columnHeaders:
@@ -60,12 +105,11 @@ def getInfo(inputFile):
 			scoreList = []
 			recommendList = []
 			confidenceList = []
-			
+
 			for submissionID in submissionIDs:
 				reviews = [str(line[columnIndexSecond]).replace("\r", "") for line in lines if str(line[columnIndexFirst]) == submissionID]
 				confidences = [float(review.split("\n")[1].split(": ")[1]) for review in reviews]
 				scores = [float(review.split("\n")[0].split(": ")[1]) for review in reviews]
-
 				confidenceList.append(sum(confidences) / len(confidences))
 
 				try:
@@ -139,14 +183,28 @@ def getInfo(inputFile):
 
 		# accepted or rejected submission
 		if "arsub" in columnHeaders:
-			columnIndex = columnHeaders.index("arsub")
+			columnIndex = columnHeaders.index("nosub")
+			columnIndexFirst = columnHeaders.index("arsub")
 
-			acceptedSubmission = [line for line in lines if str(line[columnIndex]) == 'accept']
-			rejectedSubmission = [line for line in lines if str(line[columnIndex]) == 'reject']
+			acceptedSubmission = [line for line in lines if str(line[columnIndexFirst]) == 'accept']
+			rejectedSubmission = [line for line in lines if str(line[columnIndexFirst]) == 'reject']
 
 			acceptanceRate = float(len(acceptedSubmission)) / len(lines)
-
+			
 			parsedResult['acceptanceRate'] = acceptanceRate
+
+			if multiple == "true":
+				subAcceptList = []
+				subRejectList = []
+
+				for subAccept in acceptedSubmission:
+					subAcceptList.append({subAccept[columnIndex] : subAccept[columnIndexFirst]})
+
+				for subReject in rejectedSubmission:
+					subRejectList.append({subReject[columnIndex] : subReject[columnIndexFirst]})
+						
+				parsedResult['subAcceptMap'] = subAcceptList
+				parsedResult['subRejectMap'] = subRejectList
 
 			# author of submission
 			if "authsub" in columnHeaders:
@@ -172,6 +230,15 @@ def getInfo(inputFile):
 			parsedResult['overallKeywordMap'] = allKeywordMap
 			parsedResult['overallKeywordList'] = allKeywordList
 
+			# timeupsub map
+			if "timeupsub" in columnHeaders:
+				columnIndex = columnHeaders.index("nosub")
+				columnIndexFirst = columnHeaders.index("timeupsub")
+				subTimeUpList = []
+				for line in lines:
+					subTimeUpList.append({line[columnIndex] : line[columnIndexFirst]})
+				parsedResult['subTimeUpMap'] = subTimeUpList
+
 			# accepted or rejected submission
 			if "arsub" in columnHeaders:
 				acceptedKeywords = [str(ele[columnIndex]).lower().replace("\r", "").split("\n") for ele in acceptedSubmission]
@@ -191,7 +258,7 @@ def getInfo(inputFile):
 				parsedResult['rejectedKeywordList'] = rejectedKeywordList
 
 		# track number of submission
-		if "tracknosub" in columnHeaders:
+		if "tracknamesub" in columnHeaders and "tracknosub" in columnHeaders:
 			tracks = {}
 			paperGroupsByTrack = {}
 			keywordsGroupByTrack = {}
@@ -199,9 +266,19 @@ def getInfo(inputFile):
 			comparableAcceptanceRate = {}
 			topAuthorsByTrack = {}
 
-			columnIndex = columnHeaders.index("tracknamesub")
-			tracks = set([str(ele[columnIndex]) for ele in lines])
-			paperGroupsByTrack = {track : [line for line in lines if str(line[columnIndex]) == track] for track in tracks}
+			columnIndex = columnHeaders.index("nosub")
+			columnIndexFirst = columnHeaders.index("tracknamesub")
+
+			if multiple == "true":
+				subTrackNameList = []
+
+				for line in lines:
+					subTrackNameList.append({line[columnIndex] : line[columnIndexFirst]})
+
+				parsedResult['subTrackNameMap'] = subTrackNameList
+
+			tracks = set([str(ele[columnIndexFirst]) for ele in lines])
+			paperGroupsByTrack = {track : [line for line in lines if str(line[columnIndexFirst]) == track] for track in tracks}
 
 			# Obtained from the JCDL.org website: past conferences
 			comparableAcceptanceRate['year'] = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
@@ -281,39 +358,6 @@ def getInfo(inputFile):
 			parsedResult['totalReview'] = len(confidences)
 
 	return {'infoData': parsedResult}
-
-def getAuth(lines, columnIndexFirst, columnIndexSecond):
-	authorList = []
-
-	for authorInfo in lines:
-		authorList.append({'name': authorInfo[columnIndexFirst] + " " + authorInfo[columnIndexSecond]})
-	
-	authors = [ele['name'] for ele in authorList if ele] # adding in the if ele in case of empty strings; same applies below
-	topAuthors = Counter(authors).most_common(10)
-
-	return {'labels': [ele[0] for ele in topAuthors], 'data': [ele[1] for ele in topAuthors]}
-
-def getCountry(lines, columnIndex):
-	countryList = []
-
-	for countryInfo in lines:
-		countryList.append({'country': countryInfo[columnIndex]})
-
-	countries = [ele['country'] for ele in countryList if ele]
-	topCountries = Counter(countries).most_common(10)
-
-	return  {'labels': [ele[0] for ele in topCountries], 'data': [ele[1] for ele in topCountries]}
-
-def getAffliation(lines, columnIndex):
-	affliationList = []
-
-	for affliationInfo in lines:
-		affliationList.append({'affliation': affliationInfo[columnIndex]})
-	
-	affiliations = [ele['affliation'] for ele in affliationList if ele]
-	topAffiliations = Counter(affiliations).most_common(10)
-
-	return {'labels': [ele[0] for ele in topAffiliations], 'data': [ele[1] for ele in topAffiliations]}
 
 if __name__ == "__main__":
 	parseCSVFile(fileName)
