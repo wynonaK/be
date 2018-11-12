@@ -25,22 +25,28 @@ def test(request):
 def uploadCSV(request):
 	print "Inside the upload function"
 	if request.FILES:
-		csvFile = request.FILES['file']
-		csvIfMultiple = request.POST['multiple']
+		count = request.POST['count']
+		csvIfMultiple = "false"
 
-		fileName = str(csvFile.name)
-		print fileName
+		if count > 1:
+			csvIfMultiple = "true"
+
 		rowContent = ""
-		rowContent = getInfo(csvFile, csvIfMultiple)
+		fullRowContent = {"infoData" : {}}
+
+		for i in range(int(count)):
+			csvFile = request.FILES["file"+str((i+1))]
+			rowContent = getInfo(csvFile, csvIfMultiple)
+			fullRowContent["infoData"].update(rowContent["infoData"])
 
 		print type(csvFile.name)
-
+		
 		if request.POST:
 	# current problem: request from axios not recognized as POST
 			# csvFile = request.FILES['file']
 			print "Now we got the csv file"
 
-		return HttpResponse(json.dumps(rowContent))
+		return HttpResponse(json.dumps(fullRowContent))
 		# return HttpResponse("Got the CSV file.")
 	else:
 		print "Not found the file!"
