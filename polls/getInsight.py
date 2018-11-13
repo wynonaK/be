@@ -241,6 +241,7 @@ def getInfo(inputFile, multiple):
 
 			# accepted or rejected submission
 			if "arsub" in columnHeaders:
+				columnIndex = columnHeaders.index("keysub")
 				acceptedKeywords = [str(ele[columnIndex]).lower().replace("\r", "").split("\n") for ele in acceptedSubmission]
 				acceptedKeywords = [ele for item in acceptedKeywords for ele in item]
 				acceptedKeywordMap = {k : v for k, v in Counter(acceptedKeywords).iteritems()}
