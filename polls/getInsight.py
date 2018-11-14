@@ -394,6 +394,40 @@ def avgScorePerCountry(authCountMap, revScoreMap):
 
 	return {'infoData': parsedResult}
 
+def avgScorePerOrganisation(authOrgMap, revScoreMap):
+	parsedResult = {}
+	uniqueAuthOrgMap = {}
+	uniqueOrgList = []
+	middleCombMap = {}
+
+	# unique submission and organisations for each submission
+	for i in authOrgMap:
+		submissionListingPerOrganisation = []
+		for key, value in i.iteritems():
+			if value in uniqueAuthOrgMap:
+				submissionListingPerOrganisation = uniqueAuthOrgMap.get(value)
+			if key not in submissionListingPerOrganisation:
+				submissionListingPerOrganisation.append(key)
+			uniqueAuthOrgMap.update({value: submissionListingPerOrganisation})
+			if value not in uniqueOrgList:
+				uniqueOrgList.append(value)
+
+	# perform mapping -> get score for each submission in each unique organisation list
+	for i in uniqueOrgList:
+		scoreListing = []
+		submissionList = uniqueAuthOrgMap.get(i)
+		for submission in submissionList:
+			if revScoreMap.get(submission) is not None:
+				scoreListing.append(revScoreMap.get(submission).get("score"))
+
+		if scoreListing:
+			avgScore = sum(scoreListing) / float(len(scoreListing))
+			middleCombMap.update({i : float(avgScore)})
+
+	parsedResult['avgScorePerOrganisation'] = middleCombMap
+
+	return {'infoData': parsedResult}
+
 def acceptedPerCountry(acceptedMap, authCountMap):
 	parsedResult = {}
 	uniqueAuthCountMap = {}
@@ -450,6 +484,64 @@ def rejectedPerCountry(rejectedMap, authCountMap):
 		middleCombMap.update({i : rejectedCount})
 
 	parsedResult['rejectedPerCountry'] = middleCombMap
+	return {'infoData': parsedResult}
+
+def acceptedPerOrganisation(acceptedMap, authOrgMap):
+	parsedResult = {}
+	uniqueAuthOrgMap = {}
+	uniqueOrganisationList = []
+	middleCombMap = {}
+
+	# unique submission and organisation for each submission
+	for i in authOrgMap:
+		submissionListingPerOrganisation = []
+		for key, value in i.iteritems():
+			if value in uniqueAuthOrgMap:
+				submissionListingPerOrganisation = uniqueAuthOrgMap.get(value)
+			if key not in submissionListingPerOrganisation:
+				submissionListingPerOrganisation.append(key)
+			uniqueAuthOrgMap.update({value: submissionListingPerOrganisation})
+			if value not in uniqueOrganisationList:
+				uniqueOrganisationList.append(value)
+	
+	for i in uniqueOrganisationList:
+		acceptedCount = 0
+		submissionList = uniqueAuthOrgMap.get(i)
+		for submission in submissionList:
+				if submission in acceptedMap:
+					acceptedCount += 1	
+		middleCombMap.update({i : acceptedCount})
+
+	parsedResult['acceptedPerOrganisation'] = middleCombMap
+	return {'infoData': parsedResult}
+
+def rejectedPerOrganisation(rejectedMap, authOrgMap):
+	parsedResult = {}
+	uniqueAuthOrgMap = {}
+	uniqueOrganisationList = []
+	middleCombMap = {}
+
+	# unique submission and organisation for each submission
+	for i in authOrgMap:
+		submissionListingPerOrganisation = []
+		for key, value in i.iteritems():
+			if value in uniqueAuthOrgMap:
+				submissionListingPerOrganisation = uniqueAuthOrgMap.get(value)
+			if key not in submissionListingPerOrganisation:
+				submissionListingPerOrganisation.append(key)
+			uniqueAuthOrgMap.update({value: submissionListingPerOrganisation})
+			if value not in uniqueOrganisationList:
+				uniqueOrganisationList.append(value)
+	
+	for i in uniqueOrganisationList:
+		rejectedCount = 0
+		submissionList = uniqueAuthOrgMap.get(i)
+		for submission in submissionList:
+				if submission in rejectedMap:
+					rejectedCount += 1	
+		middleCombMap.update({i : rejectedCount})
+
+	parsedResult['rejectedPerOrganisation'] = middleCombMap
 	return {'infoData': parsedResult}
 
 if __name__ == "__main__":

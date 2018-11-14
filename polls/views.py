@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from utils import parseCSVFileFromDjangoFile, isNumber, returnTestChartData
-from getInsight import getInfo, avgScorePerCountry, acceptedPerCountry, rejectedPerCountry
+from getInsight import getInfo, avgScorePerCountry, acceptedPerCountry, rejectedPerCountry, avgScorePerOrganisation, rejectedPerOrganisation, acceptedPerOrganisation
 
 # Create your views here.
 # Note: a view is a func taking the HTTP request and returns sth accordingly
@@ -46,12 +46,24 @@ def uploadCSV(request):
 				rowContent = avgScorePerCountry(innerMap["authCountMap"], innerMap["IDReviewMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
+			if "authOrgMap" in innerMap and "IDReviewMap" in innerMap:
+				rowContent = avgScorePerOrganisation(innerMap["authOrgMap"], innerMap["IDReviewMap"])
+				fullRowContent["infoData"].update(rowContent["infoData"])
+
 			if "subAcceptMap" in innerMap and "authCountMap" in innerMap:
 				rowContent = acceptedPerCountry(innerMap["subAcceptMap"], innerMap["authCountMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
 			if "subRejectMap" in innerMap and "authCountMap" in innerMap:
 				rowContent = rejectedPerCountry(innerMap["subRejectMap"], innerMap["authCountMap"])
+				fullRowContent["infoData"].update(rowContent["infoData"])
+
+			if "subAcceptMap" in innerMap and "authOrgMap" in innerMap:
+				rowContent = acceptedPerOrganisation(innerMap["subAcceptMap"], innerMap["authOrgMap"])
+				fullRowContent["infoData"].update(rowContent["infoData"])
+
+			if "subRejectMap" in innerMap and "authOrgMap" in innerMap:
+				rowContent = rejectedPerOrganisation(innerMap["subRejectMap"], innerMap["authOrgMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
 		print type(csvFile.name)
