@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from utils import parseCSVFileFromDjangoFile, isNumber, returnTestChartData
-from getInsight import getInfo
+from getInsight import getInfo, avgScorePerCountry
 
 # Create your views here.
 # Note: a view is a func taking the HTTP request and returns sth accordingly
@@ -38,6 +38,12 @@ def uploadCSV(request):
 			csvFile = request.FILES["file"+str((i+1))]
 			rowContent = getInfo(csvFile, csvIfMultiple)
 			fullRowContent["infoData"].update(rowContent["infoData"])
+
+		if count > 1:
+			innerMap = fullRowContent["infoData"]
+			if "authCountMap" in innerMap and "IDReviewMap" in innerMap:
+				rowContent = avgScorePerCountry(innerMap["authCountMap"], innerMap["IDReviewMap"])
+				fullRowContent["infoData"].update(rowContent["infoData"])
 
 		print type(csvFile.name)
 		

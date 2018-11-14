@@ -360,5 +360,40 @@ def getInfo(inputFile, multiple):
 
 	return {'infoData': parsedResult}
 
+def avgScorePerCountry(authCountMap, revScoreMap):
+	parsedResult = {}
+	uniqueAuthCountMap = {}
+	uniqueCountryList = []
+	middleCombMap = {}
+
+	# unique submission and countries for each submission
+	for i in authCountMap:
+		submissionListingPerCountry = []
+		keyValuePair = i
+		for key, value in i.iteritems():
+			if value in uniqueAuthCountMap:
+				submissionListingPerCountry = uniqueAuthCountMap.get(value)
+			if key not in submissionListingPerCountry:
+				submissionListingPerCountry.append(key)
+			uniqueAuthCountMap.update({value: submissionListingPerCountry})
+			if value not in uniqueCountryList:
+				uniqueCountryList.append(value)
+
+	# perform mapping -> get score for each submission in each unique country list
+	for i in uniqueCountryList:
+		scoreListing = []
+		submissionList = uniqueAuthCountMap.get(i)
+		for submission in submissionList:
+			if revScoreMap.get(submission) is not None:
+				scoreListing.append(revScoreMap.get(submission).get("score"))
+
+		if scoreListing:
+			avgScore = sum(scoreListing) / float(len(scoreListing))
+			middleCombMap.update({i : float(avgScore)})
+
+	parsedResult['avgScorePerCountry'] = middleCombMap
+
+	return {'infoData': parsedResult}
+
 if __name__ == "__main__":
 	parseCSVFile(fileName)
