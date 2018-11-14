@@ -544,5 +544,69 @@ def rejectedPerOrganisation(rejectedMap, authOrgMap):
 	parsedResult['rejectedPerOrganisation'] = middleCombMap
 	return {'infoData': parsedResult}
 
+def acceptedAvgScorePerOrg(acceptedMap, authOrgMap, revScoreMap):
+	parsedResult = {}
+	uniqueAuthOrgMap = {}
+	uniqueOrganisationList = []
+	middleCombMap = {}
+
+	# unique submission and organisation for each submission
+	for i in authOrgMap:
+		submissionListingPerOrganisation = []
+		for key, value in i.iteritems():
+			if value in uniqueAuthOrgMap:
+				submissionListingPerOrganisation = uniqueAuthOrgMap.get(value)
+			if key not in submissionListingPerOrganisation:
+				submissionListingPerOrganisation.append(key)
+			uniqueAuthOrgMap.update({value: submissionListingPerOrganisation})
+			if value not in uniqueOrganisationList:
+				uniqueOrganisationList.append(value)
+	
+	for i in uniqueOrganisationList:
+		scoreListing = []
+		submissionList = uniqueAuthOrgMap.get(i)
+		for submission in submissionList:
+				if submission in acceptedMap and revScoreMap.get(submission) is not None:
+					scoreListing.append(revScoreMap.get(submission).get("score"))
+		
+		if scoreListing:
+			avgScore = sum(scoreListing) / float(len(scoreListing))
+			middleCombMap.update({i : float(avgScore)})
+
+	parsedResult['acceptedAvgScorePerOrg'] = middleCombMap
+	return {'infoData': parsedResult}
+
+def acceptedAvgScorePerCountry(acceptedMap, authCountMap, revScoreMap):
+	parsedResult = {}
+	uniqueAuthCountMap = {}
+	uniqueCountryList = []
+	middleCombMap = {}
+
+	# unique submission and organisation for each submission
+	for i in authCountMap:
+		submissionListingPerCountry = []
+		for key, value in i.iteritems():
+			if value in uniqueAuthCountMap:
+				submissionListingPerCountry = uniqueAuthCountMap.get(value)
+			if key not in submissionListingPerCountry:
+				submissionListingPerCountry.append(key)
+			uniqueAuthCountMap.update({value: submissionListingPerCountry})
+			if value not in uniqueCountryList:
+				uniqueCountryList.append(value)
+	
+	for i in uniqueCountryList:
+		scoreListing = []
+		submissionList = uniqueAuthCountMap.get(i)
+		for submission in submissionList:
+				if submission in acceptedMap and revScoreMap.get(submission) is not None:
+					scoreListing.append(revScoreMap.get(submission).get("score"))
+		
+		if scoreListing:
+			avgScore = sum(scoreListing) / float(len(scoreListing))
+			middleCombMap.update({i : float(avgScore)})
+
+	parsedResult['acceptedAvgScorePerCountry'] = middleCombMap
+	return {'infoData': parsedResult}
+
 if __name__ == "__main__":
 	parseCSVFile(fileName)

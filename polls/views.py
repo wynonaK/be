@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 from utils import parseCSVFileFromDjangoFile, isNumber, returnTestChartData
-from getInsight import getInfo, avgScorePerCountry, acceptedPerCountry, rejectedPerCountry, avgScorePerOrganisation, rejectedPerOrganisation, acceptedPerOrganisation
+from getInsight import getInfo, avgScorePerCountry, acceptedPerCountry, rejectedPerCountry, avgScorePerOrganisation, rejectedPerOrganisation, acceptedPerOrganisation, acceptedAvgScorePerCountry, acceptedAvgScorePerOrg
 
 # Create your views here.
 # Note: a view is a func taking the HTTP request and returns sth accordingly
@@ -42,28 +42,44 @@ def uploadCSV(request):
 		if count > 1:
 			innerMap = fullRowContent["infoData"]
 
+			# avg score per country
 			if "authCountMap" in innerMap and "IDReviewMap" in innerMap:
 				rowContent = avgScorePerCountry(innerMap["authCountMap"], innerMap["IDReviewMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
+			# avg score per org
 			if "authOrgMap" in innerMap and "IDReviewMap" in innerMap:
 				rowContent = avgScorePerOrganisation(innerMap["authOrgMap"], innerMap["IDReviewMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
+			# no accepted per country
 			if "subAcceptMap" in innerMap and "authCountMap" in innerMap:
 				rowContent = acceptedPerCountry(innerMap["subAcceptMap"], innerMap["authCountMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
+			# no reject per country
 			if "subRejectMap" in innerMap and "authCountMap" in innerMap:
 				rowContent = rejectedPerCountry(innerMap["subRejectMap"], innerMap["authCountMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
+			# no accepted per org
 			if "subAcceptMap" in innerMap and "authOrgMap" in innerMap:
 				rowContent = acceptedPerOrganisation(innerMap["subAcceptMap"], innerMap["authOrgMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
-
+			
+			# no rejected per org
 			if "subRejectMap" in innerMap and "authOrgMap" in innerMap:
 				rowContent = rejectedPerOrganisation(innerMap["subRejectMap"], innerMap["authOrgMap"])
+				fullRowContent["infoData"].update(rowContent["infoData"])
+			
+			# accepted average scores per org
+			if "subAcceptMap" in innerMap and "authOrgMap" in innerMap and "IDReviewMap" in innerMap:
+				rowContent = acceptedAvgScorePerOrg(innerMap["subAcceptMap"], innerMap["authOrgMap"], innerMap["IDReviewMap"])
+				fullRowContent["infoData"].update(rowContent["infoData"])
+
+			# accepted average scores per country
+			if "subAcceptMap" in innerMap and "authCountMap" in innerMap and "IDReviewMap" in innerMap:
+				rowContent = acceptedAvgScorePerCountry(innerMap["subRejectMap"], innerMap["authCountMap"], innerMap["IDReviewMap"])
 				fullRowContent["infoData"].update(rowContent["infoData"])
 
 		print type(csvFile.name)
