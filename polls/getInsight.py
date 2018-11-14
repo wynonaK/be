@@ -198,10 +198,10 @@ def getInfo(inputFile, multiple):
 				subRejectList = []
 
 				for subAccept in acceptedSubmission:
-					subAcceptList.append({subAccept[columnIndex] : subAccept[columnIndexFirst]})
+					subAcceptList.append(subAccept[columnIndex])
 
 				for subReject in rejectedSubmission:
-					subRejectList.append({subReject[columnIndex] : subReject[columnIndexFirst]})
+					subRejectList.append(subReject[columnIndex])
 						
 				parsedResult['subAcceptMap'] = subAcceptList
 				parsedResult['subRejectMap'] = subRejectList
@@ -369,7 +369,6 @@ def avgScorePerCountry(authCountMap, revScoreMap):
 	# unique submission and countries for each submission
 	for i in authCountMap:
 		submissionListingPerCountry = []
-		keyValuePair = i
 		for key, value in i.iteritems():
 			if value in uniqueAuthCountMap:
 				submissionListingPerCountry = uniqueAuthCountMap.get(value)
@@ -393,6 +392,64 @@ def avgScorePerCountry(authCountMap, revScoreMap):
 
 	parsedResult['avgScorePerCountry'] = middleCombMap
 
+	return {'infoData': parsedResult}
+
+def acceptedPerCountry(acceptedMap, authCountMap):
+	parsedResult = {}
+	uniqueAuthCountMap = {}
+	uniqueCountryList = []
+	middleCombMap = {}
+
+	# unique submission and countries for each submission
+	for i in authCountMap:
+		submissionListingPerCountry = []
+		for key, value in i.iteritems():
+			if value in uniqueAuthCountMap:
+				submissionListingPerCountry = uniqueAuthCountMap.get(value)
+			if key not in submissionListingPerCountry:
+				submissionListingPerCountry.append(key)
+			uniqueAuthCountMap.update({value: submissionListingPerCountry})
+			if value not in uniqueCountryList:
+				uniqueCountryList.append(value)
+	
+	for i in uniqueCountryList:
+		acceptedCount = 0
+		submissionList = uniqueAuthCountMap.get(i)
+		for submission in submissionList:
+				if submission in acceptedMap:
+					acceptedCount += 1	
+		middleCombMap.update({i : acceptedCount})
+
+	parsedResult['acceptedPerCountry'] = middleCombMap
+	return {'infoData': parsedResult}
+
+def rejectedPerCountry(rejectedMap, authCountMap):
+	parsedResult = {}
+	uniqueAuthCountMap = {}
+	uniqueCountryList = []
+	middleCombMap = {}
+
+	# unique submission and countries for each submission
+	for i in authCountMap:
+		submissionListingPerCountry = []
+		for key, value in i.iteritems():
+			if value in uniqueAuthCountMap:
+				submissionListingPerCountry = uniqueAuthCountMap.get(value)
+			if key not in submissionListingPerCountry:
+				submissionListingPerCountry.append(key)
+			uniqueAuthCountMap.update({value: submissionListingPerCountry})
+			if value not in uniqueCountryList:
+				uniqueCountryList.append(value)
+	
+	for i in uniqueCountryList:
+		rejectedCount = 0
+		submissionList = uniqueAuthCountMap.get(i)
+		for submission in submissionList:
+				if submission in rejectedMap:
+					rejectedCount += 1	
+		middleCombMap.update({i : rejectedCount})
+
+	parsedResult['rejectedPerCountry'] = middleCombMap
 	return {'infoData': parsedResult}
 
 if __name__ == "__main__":
